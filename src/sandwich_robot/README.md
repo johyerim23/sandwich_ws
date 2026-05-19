@@ -1,134 +1,78 @@
-# Lecture 7 — MoveIt2
+# 작업
 
-This lecture demonstrates motion planning and collision avoidance with the Franka Panda robot using MoveIt2.
+지능형로보틱스 강의 자료 `07_moveit2` 패키지를 복사하여
+패키지명을 `sandwich_robot`으로 변경한 뒤,
+샌드위치 조립 로봇 시스템의 기반으로 활용함.
 
----
-
-## Prerequisites
-
-Install MoveIt2 for ROS 2 Humble:
-
-```bash
-sudo apt install ros-humble-moveit
-```
-
-Reference: [MoveIt2 Getting Started](https://moveit.picknik.ai/main/doc/tutorials/getting_started/getting_started.html)
+Franka Panda 로봇팔 + MoveIt2 + Gazebo Fortress 환경에서
+사용자 주문을 받아 재료를 Pick-and-Place하는 시스템을 구현 예정
 
 ---
+개발 명령어
 
-## MoveIt config files
+1) workspace sourcing
+source ~/sandwich_ws/install/setup.bash
 
-SRDF, kinematics, joint limits, and planning configs are loaded from the apt-installed package `moveit_resources_panda_moveit_config`:
+2) python script 수정 시
+colcon build sandwich_robot --symlink-install
 
-```bash
-cd $(ros2 pkg prefix moveit_resources_panda_moveit_config)/share/moveit_resources_panda_moveit_config
-```
+2) 실행: Gazebo와 RViz2가 실행되며 Franka Panda 로봇이 시뮬레이션 환경에 로드됨
+ros2 launch sandwich_robot sim.launch.py
 
 ---
+패키지 구조
 
-## Package layout
-
-```
-07_moveit2/                     # ROS2 package: moveit2
-├── launch/
-│   ├── demo.launch.py          # fake hardware + RViz
-│   ├── sim.launch.py           # Gazebo + MoveIt2 (collision avoidance)
-│   └── pick_and_place.launch.py# Gazebo + MoveIt2 (pick and place)
+sandwich_robot/
 ├── config/
-├── urdf/
-├── worlds/
-│   ├── table.sdf               # table + red obstacle wall
-│   └── pick_and_place.sdf      # table + green target box + blue place marker
+│   ├── initial_positions.yaml         # 로봇 초기 관절 위치
+│   ├── panda_moveit_config_demo.rviz  # RViz 설정
+│   ├── ros2_controllers_demo.yaml     # 데모용 컨트롤러 설정
+│   └── ros2_controllers_sim.yaml      # 시뮬레이션용 컨트롤러
+설정
+├── launch/
+│   ├── sim.launch.py                  # Gazebo + MoveIt2 + RViz2 통합 실행
+│   ├── pick_and_place.launch.py       # Pick-and-Place 실행
+│   └── demo.launch.py                 # 데모 실행
 ├── scripts/
-│   ├── scene_publisher.py      # publishes table + obstacle to MoveIt planning scene
-│   ├── plan_and_execute.py     # cycles between joint-space and Cartesian EE goals
-│   ├── pick_and_place.py       # full pick and place sequence with gripper
-│   └── print_ee_pose.py        # prints current EE pose (translation + quaternion)
-└── README.md
-```
+│   ├── pick_and_place.py              # Pick-and-Place 핵심 로직
+│   ├── plan_and_execute.py            # 경로 계획 및 실행
+│   ├── print_ee_pose.py               # 엔드이펙터 포즈 출력
+│   └── scene_publisher.py             # MoveIt2 플래닝 씬 관리
+├── urdf/
+│   ├── panda.urdf                     # Franka Panda 로봇 모델
+│   ├── panda_fake.urdf.xacro          # 데모용 모델
+│   └── panda_gazebo.urdf.xacro        # Gazebo 시뮬레이션용 모델
+└── worlds/
+    ├── pick_and_place.sdf             # Pick-and-Place 실습용 world
+    └── table.sdf                      # 테이블 world
 
 ---
+오류 발생 및 해결
 
-## Build
+1) package 'ros_gz_bridge' not found
+=> sudo apt-get update && sudo apt install ros-humble-ros-gz
 
-```bash
-cd ~/ros2_ws
-rosdep install -r --from-paths src/07_moveit2 --ignore-src --rosdistro humble -y
-colcon build --symlink-install --packages-select moveit2
-source install/setup.bash
-```
+2) RViz에서 moveit_rviz_plugin X 표시
+=> MoveIt RViz 플러그인 누락. 아래 설치 후 재실행: sudo apt install ros-humble-moveit-ros-visualization
 
----
-
-## Quickstart demo (fake hardware)
-
-Runs the Panda in RViz with `mock_components/GenericSystem` — motion planning works without physics simulation:
-
-```bash
-ros2 launch moveit2 demo.launch.py
-```
-
-Reference: [MoveIt2 Quickstart in RViz](https://moveit.picknik.ai/main/doc/tutorials/quickstart_in_rviz/quickstart_in_rviz_tutorial.html)
+3) gz_ros2_control-system 플러그인 로드 실패
+=> sudo apt install ros-humble-ign-ros2-control
 
 ---
+개발 계획
 
-## Collision avoidance demo
-
-Launches Gazebo with a table and a red obstacle wall. The planning scene is automatically populated with matching collision objects:
-
-```bash
-# Terminal 1
-ros2 launch moveit2 sim.launch.py
-
-# Terminal 2 — cycles between a joint-space goal and a Cartesian EE pose goal
-ros2 run moveit2 plan_and_execute.py
-```
-
-Goals in `plan_and_execute.py`:
-- **Joint goal** — arm swept left of the obstacle wall (`joint1 = +1.0 rad`)
-- **Pose goal** — EE at `[0.559, -0.059, 0.972]` with fixed orientation, in front of the wall
-
-To read the current EE pose:
-```bash
-# Formatted translation + quaternion (polls every 0.5 s)
-ros2 run moveit2 print_ee_pose.py
-
-# Raw TF2 output
-ros2 run tf2_ros tf2_echo world panda_link8
-```
-
----
-
-## Pick and place demo
-
-Launches Gazebo with a table, a green target box (pick), and a blue marker (place):
-
-```bash
-# Terminal 1
-ros2 launch moveit2 pick_and_place.launch.py
-
-# Terminal 2 — runs the full pick and place sequence
-ros2 run moveit2 pick_and_place.py
-```
-
-Sequence:
-1. Open gripper → pre-grasp (OMPL) → approach (Cartesian) → close gripper → attach object
-2. Lift (Cartesian) → transfer to place (OMPL) → place (Cartesian) → open gripper → detach → retreat (Cartesian) → home
-3. Return: pre-grasp from place (OMPL) → approach (Cartesian) → close gripper → attach → lift (Cartesian) → transfer back (OMPL) → place at origin (Cartesian) → open gripper → detach → retreat (Cartesian) → home
-
-Planner strategy mirrors MoveIt Task Constructor:
-- **Cartesian path** (`/compute_cartesian_path`) for straight-line EE motions (approach, lift, retreat)
-- **OMPL** (`/move_action`, IK → joint goal) for free-space transfers
-- **JointTrajectoryController** for the gripper (both fingers)
-
----
-
-## MoveIt Setup Assistant
-
-To create a MoveIt config for a new robot:
-
-```bash
-ros2 launch moveit_setup_assistant setup_assistant.launch.py
-```
-
-Reference: [MoveIt Setup Assistant](https://moveit.picknik.ai/main/doc/examples/setup_assistant/setup_assistant_tutorial.html)
+> **1단계** 환경 세팅, Gazebo + Franka Panda 동작 확인: 완료✅
+>
+> **2단계** 샌드위치 재료 트레이 World SDF 작성
+>
+> **3단계** Pick-and-Place 동작 구현
+>
+> **4단계** PyQt5 노드 구현
+>
+> **5단계** LLM Parser 노드 구현
+>
+> **6단계** YOLO QC 노드 구현
+>
+> **7단계** 전체 노드 통합 및 점검
+>
+> **8단계** 최종 테스트 및 프로젝트 보완
