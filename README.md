@@ -56,3 +56,14 @@
 - 서브웨이 샌드위치:https://www.subway.co.kr/menuList/sandwich
 - PyQt5-ROS2: https://github.com/tasada038/pyqt_ros2_app
 - LLM-ROS2: https://github.com/aniskoubaa/rosgpt
+
+<Br>
+
+## Commit 메시지 규칙
+- feat: 새로운 기능 추가
+- fix: 버그 수정
+- docs: 문서 수정 (README, 주석 등)
+- style: 코드 포맷팅, 세미콜론 누락 등 (코드 변경 없음)
+- refactor: 코드 리팩토링
+- test: 테스트 코드 추가/수정
+- chore: 빌드 업무 수정, 패키지 매니저 설정 등
