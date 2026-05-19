@@ -1,4 +1,7 @@
-# 작업
+# 1단계
+<Br>
+
+## 작업
 
 지능형로보틱스 강의 자료 `07_moveit2` 패키지를 복사하여
 패키지명을 `sandwich_robot`으로 변경한 뒤,
@@ -7,21 +10,26 @@
 Franka Panda 로봇팔 + MoveIt2 + Gazebo Fortress 환경에서
 사용자 주문을 받아 재료를 Pick-and-Place하는 시스템을 구현 예정
 
----
-개발 명령어
-
-1) workspace sourcing
-source ~/sandwich_ws/install/setup.bash
-
-2) python script 수정 시
-colcon build sandwich_robot --symlink-install
-
-2) 실행: Gazebo와 RViz2가 실행되며 Franka Panda 로봇이 시뮬레이션 환경에 로드됨
-ros2 launch sandwich_robot sim.launch.py
+<Br>
 
 ---
-패키지 구조
+## 개발 명령어
 
+### 1) workspace sourcing<Br>
+`source ~/sandwich_ws/install/setup.bash`
+
+### 2) python script 수정 시<Br>
+`colcon build sandwich_robot --symlink-install`
+
+### 3) 실행: Gazebo와 RViz2가 실행되며 Franka Panda 로봇이 시뮬레이션 환경에 로드됨<Br>
+`ros2 launch sandwich_robot sim.launch.py`
+
+<Br>
+
+---
+## 패키지 구조
+
+```
 sandwich_robot/
 ├── config/
 │   ├── initial_positions.yaml         # 로봇 초기 관절 위치
@@ -45,21 +53,26 @@ sandwich_robot/
 └── worlds/
     ├── pick_and_place.sdf             # Pick-and-Place 실습용 world
     └── table.sdf                      # 테이블 world
+```
+
+<Br>
 
 ---
-오류 발생 및 해결
+## 오류 발생 및 해결
 
-1) package 'ros_gz_bridge' not found
-=> sudo apt-get update && sudo apt install ros-humble-ros-gz
+### 1) package 'ros_gz_bridge' not found<Br>
+=> `sudo apt-get update && sudo apt install ros-humble-ros-gz`
 
-2) RViz에서 moveit_rviz_plugin X 표시
-=> MoveIt RViz 플러그인 누락. 아래 설치 후 재실행: sudo apt install ros-humble-moveit-ros-visualization
+### 2) RViz에서 moveit_rviz_plugin X 표시<Br>
+=> MoveIt RViz 플러그인 누락. 아래 설치 후 재실행: `sudo apt install ros-humble-moveit-ros-visualization`
 
-3) gz_ros2_control-system 플러그인 로드 실패
-=> sudo apt install ros-humble-ign-ros2-control
+### 3) gz_ros2_control-system 플러그인 로드 실패<Br>
+=> `sudo apt install ros-humble-ign-ros2-control`
+
+<Br>
 
 ---
-개발 계획
+## 개발 계획
 
 > **1단계** 환경 세팅, Gazebo + Franka Panda 동작 확인: 완료✅
 >
