@@ -19,7 +19,7 @@ Franka Panda 로봇팔 + MoveIt2 + Gazebo Fortress 환경에서
 `source ~/sandwich_ws/install/setup.bash`
 
 ### 2) python script 수정 시<Br>
-`colcon build sandwich_robot --symlink-install`
+`colcon build --symlink-install`
 
 ### 3) 실행: Gazebo와 RViz2가 실행되며 Franka Panda 로봇이 시뮬레이션 환경에 로드됨<Br>
 `ros2 launch sandwich_robot sim.launch.py`
